@@ -1,55 +1,44 @@
 node {
-    environment {
-        // Ruta al ejecutable de Python
-        PYTHON_PATH = 'C:\\Users\\EQUIPO\\AppData\\Local\\Programs\\Python\\Python312\\python.exe'
-        // Ruta al script de envío de correo
-        EMAIL_SCRIPT_PATH = 'C:\\ProgramData\\Jenkins\\.jenkins\\scripts\\send_email.py'
-    }
+    // Define las variables de entorno
+    def pythonPath = 'C:\\Users\\EQUIPO\\AppData\\Local\\Programs\\Python\\Python312\\python.exe'
+    def emailScriptPath = 'C:\\ProgramData\\Jenkins\\.jenkins\\scripts\\send_email.py'
 
-    stages {
+    try {
         stage('Revisión') {
-            steps {
-                // Checkout del código fuente desde el repositorio bifurcado
-                git url: 'https://github.com/tu_usuario/tu_repositorio_forked.git', branch: 'master'
-            }
+            // Checkout del código fuente desde el repositorio bifurcado
+            checkout([$class: 'GitSCM', 
+                      branches: [[name: 'main']],
+                      userRemoteConfigs: [[url: 'https://github.com/tu_usuario/tu_repositorio_forked.git']]])
         }
 
         stage('Instalación de dependencias') {
-            steps {
-                bat 'npm install'
-            }
+            // Instala las dependencias del proyecto
+            bat 'npm install'
         }
 
         stage('Construir') {
-            steps {
-                bat 'npm run ng build'
-            }
+            // Construye el proyecto Angular
+            bat 'npm run ng build'
         }
 
         stage('Limpiar') {
-            steps {
-                bat 'rd /s /q C:\\servidor\\fire'
-            }
+            // Limpia la carpeta en el servidor
+            bat 'rd /s /q C:\\servidor\\fire'
         }
 
         stage('Mover al servidor') {
-            steps {
-                bat 'xcopy C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\angular-pipeline\\dist\\app-03\\browser C:\\servidor\\fire /E /I /Y'
-            }
+            // Copia los archivos construidos al servidor
+            bat 'xcopy C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\angular-pipeline\\dist\\app-03\\browser C:\\servidor\\fire /E /I /Y'
+        }
+
+    } catch (Exception e) {
+        // Manejo de errores en caso de que algo falle en las etapas
+        currentBuild.result = 'FAILURE'
+        throw e
+    } finally {
+        stage('Enviar correo') {
+            // Ejecuta el script de Python para enviar un correo electrónico
+            bat "${pythonPath} ${emailScriptPath}"
         }
     }
-
-    post {
-        always {
-            // Esta etapa se ejecutará siempre, independientemente del estado del pipeline
-            echo 'Pipeline completo, enviando correo...'
-            bat "${PYTHON_PATH} ${EMAIL_SCRIPT_PATH}"
-        }
-        success {
-            echo 'Construcción, despliegue y envío de correo exitosos!'
-        }
-        failure {
-            echo 'Construcción, despliegue o envío de correo fallidos!'
-        }
-
 }
