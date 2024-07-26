@@ -8,7 +8,7 @@ node {
             // Checkout del código fuente desde el repositorio bifurcado
             checkout([$class: 'GitSCM', 
                       branches: [[name: 'main']],
-                      userRemoteConfigs: [[url: 'https://github.com/tu_usuario/tu_repositorio_forked.git']]])
+                      userRemoteConfigs: [[url: 'https://github.com/Marlonds95/app-web2-ejer3-mat-activida.git']]])
         }
 
         stage('Instalación de dependencias') {
