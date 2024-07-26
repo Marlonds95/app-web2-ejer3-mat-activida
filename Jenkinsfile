@@ -30,7 +30,7 @@ node {
 
         stage('Mover al servidor') {
             // Copia los archivos construidos al servidor
-            bat 'xcopy C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\angular-pipeline\\dist\\app-03\\browser C:\\servidor\\fire /E /I /Y'
+            bat 'xcopy C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\actividad-pipe-angular\\dist\\app-03\\browser C:\\servidor\\fire /E /I /Y'
         }
 
     } catch (Exception e) {
